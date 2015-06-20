@@ -14,7 +14,8 @@ angular.module('ui.bootstrap.timepicker', [])
 .controller('TimepickerController', ['$scope', '$attrs', '$parse', '$log', '$locale', 'timepickerConfig', function($scope, $attrs, $parse, $log, $locale, timepickerConfig) {
   var selected = new Date(),
       ngModelCtrl = { $setViewValue: angular.noop }, // nullModelCtrl
-      meridians = angular.isDefined($attrs.meridians) ? $scope.$parent.$eval($attrs.meridians) : timepickerConfig.meridians || $locale.DATETIME_FORMATS.AMPMS;
+      meridians = angular.isDefined($attrs.meridians) ? $scope.$parent.$eval($attrs.meridians) : timepickerConfig.meridians || $locale.DATETIME_FORMATS.AMPMS,
+      utcTime = angular.isDefined($attrs.utcTime) ? $scope.$parent.$eval($attrs.utcTime) : timepickerConfig.utcTime;
 
   this.init = function( ngModelCtrl_, inputs ) {
     ngModelCtrl = ngModelCtrl_;
@@ -65,7 +66,11 @@ angular.module('ui.bootstrap.timepicker', [])
         // Evaluate from template
         var hours = getHoursFromTemplate(), minutes = getMinutesFromTemplate();
         if (angular.isDefined( hours ) && angular.isDefined( minutes )) {
-          selected.setHours( hours );
+          if ( attrs.utcTime ) {
+            selected.setUTCHours( hours );
+          } else {
+            selected.setHours( hours );
+          }
           refresh();
         }
       } else {
@@ -176,7 +181,11 @@ angular.module('ui.bootstrap.timepicker', [])
       var hours = getHoursFromTemplate();
 
       if ( angular.isDefined(hours) ) {
-        selected.setHours( hours );
+        if ( utcTime ) {
+          selected.setUTCHours( hours );
+        } else {
+          selected.setHours( hours );
+        }
         refresh( 'h' );
       } else {
         invalidate(true);
@@ -195,7 +204,11 @@ angular.module('ui.bootstrap.timepicker', [])
       var minutes = getMinutesFromTemplate();
 
       if ( angular.isDefined(minutes) ) {
-        selected.setMinutes( minutes );
+        if ( utcTime ) {
+          selected.setUTCMinutes( minutes );
+        } else {
+          selected.setMinutes( minutes );
+        }
         refresh( 'm' );
       } else {
         invalidate(undefined, true);
@@ -242,6 +255,9 @@ angular.module('ui.bootstrap.timepicker', [])
 
   function updateTemplate( keyboardChange ) {
     var hours = selected.getHours(), minutes = selected.getMinutes();
+    if ( utcTime ) {
+      hours = selected.getUTCHours(), minutes = selected.getUTCMinutes();
+    }
 
     if ( $scope.showMeridian ) {
       hours = ( hours === 0 || hours === 12 ) ? 12 : hours % 12; // Convert 24 to 12 hour system
@@ -251,12 +267,20 @@ angular.module('ui.bootstrap.timepicker', [])
     if (keyboardChange !== 'm') {
       $scope.minutes = pad(minutes);
     }
-    $scope.meridian = selected.getHours() < 12 ? meridians[0] : meridians[1];
+    if ( utcTime ) {
+      $scope.meridian = selected.getUTCHours() < 12 ? meridians[0] : meridians[1];
+    } else {
+      $scope.meridian = selected.getHours() < 12 ? meridians[0] : meridians[1];
+    }
   }
 
   function addMinutes( minutes ) {
     var dt = new Date( selected.getTime() + minutes * 60000 );
-    selected.setHours( dt.getHours(), dt.getMinutes() );
+    if ( utcTime ) {
+      selected.setUTCHours( dt.getUTCHours(), dt.getUTCMinutes() );
+    } else {
+      selected.setHours( dt.getHours(), dt.getMinutes() );
+    }
     refresh();
   }
   
@@ -277,6 +301,11 @@ angular.module('ui.bootstrap.timepicker', [])
   };
   $scope.toggleMeridian = function() {
     addMinutes( 12 * 60 * (( selected.getHours() < 12 ) ? 1 : -1) );
+    if ( utcTime ) {
+      addMinutes( 12 * 60 * (( selected.getUTCHours() < 12 ) ? 1 : -1) );
+    } else {
+      addMinutes( 12 * 60 * (( selected.getHours() < 12 ) ? 1 : -1) );
+    }
   };
 }])
 
