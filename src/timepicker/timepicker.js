@@ -66,7 +66,7 @@ angular.module('ui.bootstrap.timepicker', [])
         // Evaluate from template
         var hours = getHoursFromTemplate(), minutes = getMinutesFromTemplate();
         if (angular.isDefined( hours ) && angular.isDefined( minutes )) {
-          if ( attrs.utcTime ) {
+          if ( utcTime ) {
             selected.setUTCHours( hours );
           } else {
             selected.setHours( hours );
@@ -256,7 +256,8 @@ angular.module('ui.bootstrap.timepicker', [])
   function updateTemplate( keyboardChange ) {
     var hours = selected.getHours(), minutes = selected.getMinutes();
     if ( utcTime ) {
-      hours = selected.getUTCHours(), minutes = selected.getUTCMinutes();
+      hours = selected.getUTCHours();
+      minutes = selected.getUTCMinutes();
     }
 
     if ( $scope.showMeridian ) {
@@ -283,10 +284,10 @@ angular.module('ui.bootstrap.timepicker', [])
     }
     refresh();
   }
-  
+
   $scope.showSpinners = angular.isDefined($attrs.showSpinners) ?
     $scope.$parent.$eval($attrs.showSpinners) : timepickerConfig.showSpinners;
-  
+
   $scope.incrementHours = function() {
     addMinutes( hourStep * 60 );
   };
