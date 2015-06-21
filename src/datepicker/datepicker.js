@@ -653,6 +653,14 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
         scope.date = dateParser.parse(ngModel.$viewValue, dateFormat, scope.date) || new Date(ngModel.$viewValue);
       });
 
+      var windowResizeBind = function(event) {
+        if (scope.isOpen) {
+          scope.$apply(function() {
+            updatePosition();
+          });
+        }
+      }
+
       var documentClickBind = function(event) {
         if (scope.isOpen && event.target !== element[0]) {
           scope.$apply(function() {
@@ -678,14 +686,28 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
         }
       };
 
+      var updatePosition = function() {
+        scope.$broadcast('datepicker.focus');
+        scope.position = appendToBody ? $position.offset(element) : $position.position(element);
+        scope.position.top = scope.position.top + element.prop('offsetHeight');
+
+        var padding = 20; //min distance away from right side
+        var width = popupEl.outerWidth(true);
+        var widthOver =  $('body').outerWidth(true) - (scope.position.left + width + padding);
+
+        if(widthOver < 0) {
+            scope.position.left = scope.position.left + widthOver;
+        }
+      }
+
       scope.$watch('isOpen', function(value) {
         if (value) {
-          scope.$broadcast('datepicker.focus');
-          scope.position = appendToBody ? $position.offset(element) : $position.position(element);
-          scope.position.top = scope.position.top + element.prop('offsetHeight');
+          updatePosition();
 
+          $(window).bind('resize', windowResizeBind);
           $document.bind('click', documentClickBind);
         } else {
+          $(window).unbind('resize', windowResizeBind);
           $document.unbind('click', documentClickBind);
         }
       });
