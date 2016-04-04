@@ -153,12 +153,12 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.stackedMap', 'ui.bootstrap.p
             evt.target === evt.currentTarget) {
             evt.preventDefault();
             evt.stopPropagation();
-            $modalStack.dismiss(modal.key, 'backdrop click');
+            $modalStack.dismiss(modal.key, 'backdrop mousedown');
           }
         };
 
         // moved from template to fix issue #2280
-        element.on('click', scope.close);
+        element.on('mousedown', scope.close);
 
         // This property is only added to the scope for the purpose of detecting when this directive is rendered.
         // We can detect that by using this property in the template associated with this directive and then use
